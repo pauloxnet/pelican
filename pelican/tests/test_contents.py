@@ -701,6 +701,26 @@ class TestPage(TestBase):
         assert content.authors
         assert content.author == content.authors[0]
 
+    def test_page_timezone_metadata(self):
+        # Test that per-page timezone metadata overrides global TIMEZONE setting
+        settings = get_settings()
+        settings["TIMEZONE"] = "America/Los_Angeles"
+        
+        page_kwargs = self._copy_page_kwargs()
+        page_kwargs["settings"] = settings
+        page_kwargs["metadata"]["date"] = datetime.datetime(2024, 6, 15, 14, 30, 0)
+        
+        # Test 1: Page without timezone metadata uses global TIMEZONE
+        page = Page(**page_kwargs)
+        self.assertEqual(str(page.timezone), "America/Los_Angeles")
+        self.assertEqual(page.date.tzinfo.key, "America/Los_Angeles")
+        
+        # Test 2: Page with timezone metadata overrides global setting
+        page_kwargs["metadata"]["timezone"] = "Australia/Sydney"
+        page_sydney = Page(**page_kwargs)
+        self.assertEqual(str(page_sydney.timezone), "Australia/Sydney")
+        self.assertEqual(page_sydney.date.tzinfo.key, "Australia/Sydney")
+
 
 class TestArticle(TestBase):
     def test_template(self):
@@ -788,6 +808,45 @@ class TestArticle(TestBase):
         article_kwargs["settings"] = settings
         article = Article(**article_kwargs)
         self.assertTrue(article._has_valid_save_as())
+
+    def test_article_timezone_metadata(self):
+        # Test that per-article timezone metadata overrides global TIMEZONE setting
+        settings = get_settings()
+        settings["TIMEZONE"] = "America/New_York"
+        
+        article_kwargs = self._copy_page_kwargs()
+        article_kwargs["settings"] = settings
+        article_kwargs["metadata"]["date"] = datetime.datetime(2024, 1, 1, 12, 0, 0)
+        article_kwargs["metadata"]["category"] = Category("test", settings)
+        
+        # Test 1: Article without timezone metadata uses global TIMEZONE
+        article = Article(**article_kwargs)
+        self.assertEqual(str(article.timezone), "America/New_York")
+        self.assertEqual(article.date.tzinfo.key, "America/New_York")
+        
+        # Test 2: Article with timezone metadata overrides global setting
+        article_kwargs["metadata"]["timezone"] = "Europe/Paris"
+        article_paris = Article(**article_kwargs)
+        self.assertEqual(str(article_paris.timezone), "Europe/Paris")
+        self.assertEqual(article_paris.date.tzinfo.key, "Europe/Paris")
+        
+    def test_article_modified_timezone(self):
+        # Test that modified date also uses per-article timezone
+        settings = get_settings()
+        settings["TIMEZONE"] = "UTC"
+        
+        article_kwargs = self._copy_page_kwargs()
+        article_kwargs["settings"] = settings
+        article_kwargs["metadata"]["date"] = datetime.datetime(2024, 1, 1, 12, 0, 0)
+        article_kwargs["metadata"]["modified"] = datetime.datetime(2024, 1, 2, 15, 30, 0)
+        article_kwargs["metadata"]["category"] = Category("test", settings)
+        article_kwargs["metadata"]["timezone"] = "Asia/Tokyo"
+        
+        article = Article(**article_kwargs)
+        
+        # Both date and modified should use the per-article timezone
+        self.assertEqual(article.date.tzinfo.key, "Asia/Tokyo")
+        self.assertEqual(article.modified.tzinfo.key, "Asia/Tokyo")
 
 
 class TestStatic(LoggedTestCase):

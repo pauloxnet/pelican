@@ -93,7 +93,28 @@ contains a list of reserved metadata keywords:
 ``template``    Name of template to use to generate content (without extension)
 ``save_as``     Save content to this relative file path
 ``url``         URL to use for this article/page
+``timezone``    Override the default ``TIMEZONE`` setting for this content
 =============== ===============================================================
+
+Note that you can use your own custom metadata keys (any that do not conflict
+with reserved names) for use in templates or plugins.
+
+The ``timezone`` metadata allows you to override the global ``TIMEZONE`` setting
+on a per-article or per-page basis. This is useful when you have content published
+in different timezones. For example::
+
+    My super title
+    ##############
+
+    :date: 2024-01-15 10:00:00
+    :timezone: Asia/Tokyo
+    :category: Travel
+
+In this example, the article's date will be interpreted as 10:00 AM in Tokyo time,
+even if your global ``TIMEZONE`` setting is different. The timezone value should be
+a valid timezone identifier from the `tz database`_.
+
+.. _tz database: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 
 Readers for additional formats (such as AsciiDoc_) are available via plugins,
 which you can find via the `Pelican Plugins`_ collection as well as the legacy

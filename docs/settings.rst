@@ -752,6 +752,12 @@ Time and Date
 
    Have a look at `the wikipedia page`_ to get a list of valid timezone values.
 
+   .. note::
+
+      You can override the global ``TIMEZONE`` setting on a per-article or per-page
+      basis using the ``timezone`` metadata field. See :ref:`internal_metadata` for
+      more information.
+
 .. _the wikipedia page: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 
 .. data:: DEFAULT_DATE
